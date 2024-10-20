@@ -27,4 +27,4 @@ Technology Stack
 Backend: .NET Core MVC
 Frontend: Razor Pages (HTML, CSS, JavaScript)
 Database: SQL Server
->>>>>>> 0bf8c63c6e190d78bcfe0915d1327fb48cb8514d
+

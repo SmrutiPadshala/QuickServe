@@ -36,7 +36,16 @@
                     <td>@restaurant.Name</td>
                     <td>@restaurant.Description</td>
                     <td>@restaurant.Location</td>
-                    <td>@restaurant.ImgName</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(restaurant.ImgPath))
+                    {
+                        <img src="@restaurant.ImgPath" alt="@restaurant.Name" style="width: 100px; height: auto;" />
+                    }
+                    else
+                    {
+                        <span>No Image</span>
+                    }
+                </td>
                 <td>
                     <a asp-action="EditMenue" asp-controller="Admin" asp-route-id="@restaurant.Id"><i class="fas fa-edit" title="Edit"></i></a>
                 </td>

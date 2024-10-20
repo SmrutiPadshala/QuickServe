@@ -9,7 +9,14 @@
     <!-- Restaurant Image and Details -->
     <div class="row mb-4 res-container">
         <div class="col-md-3">
-            <img src="~/images/buffloburger.jpg" class="img-fluid w-100" alt="Restaurant Image">
+            @if (Model.FirstOrDefault()?.Menu.Restaurant.ImgPath != null)
+            {
+                <img src="@Model.FirstOrDefault()?.Menu.Restaurant.ImgPath" class="img-fluid w-100" alt="Restaurant Image">
+            }
+            else
+            {
+                <img src="~/images/default-restaurant.jpg" class="img-fluid w-100" alt="Default Restaurant Image"> <!-- Fallback image -->
+            }
         </div>
         <div class="col-md-9">
             <h2>@Model.FirstOrDefault()?.Menu.Restaurant.Name</h2>
@@ -27,9 +34,9 @@
             <div class="col-md-4 mb-3">
                 <div class="card h-100">
                     <!-- Added h-100 class to ensure the card fills the content -->
-                    <img src="~/images/am1.jpg" class="card-img-top w-100 img-fluid" alt="Meal Image"> <!-- Added img-fluid class to ensure the image fills the card -->
+                    <img src="~/images/food.jpg" class="card-img-top w-100 img-fluid" alt="Meal Image"> <!-- Added img-fluid class to ensure the image fills the card -->
                     <div class="card-body">
-                        <h5 class="card-title">@meal.MealName <span class="ml-3 bg-warning p-1">@meal.Price EGP</span></h5> <!-- Added price with EGP -->
+                        <h5 class="card-title">@meal.MealName <span class="ml-3 bg-warning p-1">@meal.Price RS</span></h5> 
                         <p class="card-text">@meal.Description</p>
                         <!-- Add more meal details as needed -->
                         <a asp-action="MakeOrder" asp-controller="Customer" asp-route-id="@meal.Id" class="link link-danger">Order Now</a>

@@ -5,7 +5,9 @@ using System.Security.Claims;
 
 namespace Foodies.Controllers
 {
-	public class CustomerController : Controller
+    //[Route("Customer/[action]/{id?}")]
+    //[ApiController]
+    public class CustomerController : Controller
 	{
         private readonly ApplicationDBContext _DBContext;
         public CustomerController(ApplicationDBContext dbContext)
@@ -61,26 +63,75 @@ namespace Foodies.Controllers
             var meal = _DBContext.Meals.FirstOrDefault(m => m.Id == id);
             if (meal == null)
             {
+                
                 return NotFound();
             }
             TempData["MealID"] = meal.Id;
             return View(meal);
         }
         // Make sure to import your Reservation model
+
+
+        /*public IActionResult ConfirmOrder(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound("Reservation ID is missing.");
+            }
+
+            var reservation = _DBContext.Reservations
+                .Include(r => r.Meal)
+                .Include(r => r.Customer)
+                .FirstOrDefault(r => r.Reservation_Id == id);
+
+            if (reservation == null)
+            {
+                return NotFound("Reservation not found.");
+            }
+
+            return View(reservation); // Ensure you have a ConfirmOrder.cshtml view in Views/Customer/
+        }
+
+
+
+        [HttpPost]
         public IActionResult ConfirmOrder(int id, Reservation reservation, bool Delivery)
         {
-            var mealId = TempData["MealID"] != null ? (int)TempData["MealID"] : 0;
+            var mealId = TempData["MealID"] as int? ?? 0;
 
-           
-            var meal = _DBContext.Meals.FirstOrDefault(x => x.Id == mealId);
-            reservation.Meal = meal;
+            if (mealId == 0)
+            {
+                return BadRequest("Meal ID is missing."); // Handle case where MealID is not found in TempData
+            }
+
+            // Eager loading the Menu along with the Meal
+            var meal = _DBContext.Meals
+                .Include(m => m.Menu) // Ensure that Menu is loaded
+                .FirstOrDefault(x => x.Id == mealId);
+
             if (meal == null)
             {
-                return NotFound(); // Handle case where meal is not found
+                return BadRequest("Meal not found."); // Handle case where meal is not found
             }
-            reservation.Delivery= Delivery;
-            reservation.Customer_Id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-           reservation.Meal_Id = mealId;
+
+            // Check if reservation is null
+            if (reservation == null)
+            {
+                return BadRequest("Reservation data is missing.");
+            }
+
+            // Assign meal to reservation
+            reservation.Meal = meal;
+            reservation.Delivery = Delivery;
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized(); // Handle unauthorized access
+            }
+
+            reservation.Customer_Id = int.Parse(userId);
+            reservation.Meal_Id = mealId;
             ModelState.Remove("Customer");
             ModelState.Remove("Meal");
 
@@ -88,12 +139,11 @@ namespace Foodies.Controllers
             {
                 try
                 {
-                 
                     var newReservation = new Reservation
                     {
                         Customer_Id = reservation.Customer_Id,
-                      Meal_Id = reservation.Meal_Id,
-                    PaymentType = reservation.PaymentType,
+                        Meal_Id = reservation.Meal_Id,
+                        PaymentType = reservation.PaymentType,
                         Quantity = reservation.Quantity,
                         Delivery = reservation.Delivery
                     };
@@ -101,18 +151,124 @@ namespace Foodies.Controllers
                     _DBContext.Reservations.Add(newReservation);
                     _DBContext.SaveChanges();
 
-                    return RedirectToAction("SeeMenue", new { id = reservation.Meal.Menu.Resturant_Id });
+                    // Check if Meal and Menu are valid before redirecting
+                    if (meal.Menu != null)
+                    {
+                        return RedirectToAction("SeeMenue", new { id = meal.Menu.Resturant_Id });
+                    }
+                    else
+                    {
+                        return NotFound("Menu not found for the meal."); // Handle case where menu is missing
+                    }
                 }
                 catch (Exception ex)
                 {
-                    
-                    return View("Error"); // Display a generic error view
+                    return View("Error", ex); // Display a generic error view
                 }
             }
 
-  
-            return RedirectToAction("SeeMenue", new {id=meal.Menu.Resturant_Id});
+            // Final check if meal and its menu exist
+            if (meal.Menu != null)
+            {
+                return RedirectToAction("SeeMenue", new { id = meal.Menu.Resturant_Id });
+            }
+            else
+            {
+                return NotFound("Menu not found for the meal."); // Handle case where menu is missing
+            }
+        }*/
+
+
+
+
+        /*[HttpPost]
+        public IActionResult ConfirmOrder(Reservation reservation, bool Delivery)
+        {
+            // Retrieve the Meal ID from TempData
+            var mealId = TempData["MealID"] as int? ?? 0;
+
+            if (mealId == 0)
+            {
+                return BadRequest("Meal ID is missing."); // Handle case where MealID is not found in TempData
+            }
+
+            // Fetch the meal from the database
+            var meal = _DBContext.Meals.Include(m => m.Menu).FirstOrDefault(x => x.Id == mealId);
+            if (meal == null)
+            {
+                return BadRequest("Meal not found."); // Handle case where meal is not found
+            }
+
+            // Assign the Meal_Id and Delivery status to the reservation
+            reservation.Meal_Id = mealId;
+            reservation.Delivery = Delivery;
+
+            // Get the Customer ID from claims
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized(); // Handle unauthorized access
+            }
+
+            // Assign Customer_Id to the reservation
+            reservation.Customer_Id = int.Parse(userId);
+
+            // Ensure the ModelState is valid before proceeding
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Add the reservation to the database
+                    _DBContext.Reservations.Add(reservation);
+                    _DBContext.SaveChanges();
+
+                    // Redirect to the menu after a successful reservation
+                    if (meal.Menu != null)
+                    {
+                        return RedirectToAction("SeeMenue", new { id = meal.Menu.Resturant_Id });
+                    }
+                    else
+                    {
+                        return NotFound("Menu not found for the meal."); // Handle case where menu is missing
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle any exceptions that occur during save
+                    return View("Error", ex); // Display a generic error view
+                }
+            }
+
+            // If the ModelState is invalid, return to the view with the current reservation data
+            return View(reservation); // Ensure you have a view to handle this scenario
+        }*/
+        [HttpPost]
+        public IActionResult ConfirmOrder(Reservation reservation)
+        {
+            if (ModelState.IsValid)
+            {
+                // Save the reservation to the database
+                _DBContext.Reservations.Add(reservation);
+                _DBContext.SaveChanges();
+
+                // Retrieve the meal details
+                var meal = _DBContext.Meals.Find(reservation.Meal_Id);
+                if (meal == null)
+                {
+                    return NotFound("Meal not found.");
+                }
+
+                // Store both in ViewBag or TempData
+                ViewBag.Meal = meal;
+                return View("ConfirmOrder", reservation);
+            }
+
+            // If the model is invalid, return to the MakeOrder view with the same meal
+            var mealForMakeOrder = _DBContext.Meals.Find(reservation.Meal_Id);
+            return View("MakeOrder", mealForMakeOrder);
         }
+
+
 
         public IActionResult CancelOrder(int id)
         {

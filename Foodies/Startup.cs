@@ -17,11 +17,18 @@ namespace Foodies
 
         public IConfiguration Configuration { get; }
 
+        //public void ConfigureServices(IServiceCollection services)
+        //{
+        //    services.AddDbContext<ApplicationDBContext>(options =>
+        //      options.UseSqlServer(Configuration.GetConnectionString("Server=.;Database=Foodies;Trusted_Connection=True;TrustServerCertificate=True;")));
+
+        //    services.AddControllersWithViews();
+        //}
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDBContext>(options =>
-              options.UseSqlServer(Configuration.GetConnectionString("Server=.;Database=Foodies;Trusted_Connection=True;TrustServerCertificate=True;")));
-
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))); // Ensure you have a connection string defined in appsettings.json
             services.AddControllersWithViews();
         }
 

@@ -38,6 +38,17 @@
                 <td>@meal.Description</td>
                 <td>@meal.Price</td>
                 <td>@meal.Menu.Restaurant.Name</td>
+
+                <td>
+                    @if (meal.Menu != null && meal.Menu.Restaurant != null)
+                    {
+                        @meal.Menu.Restaurant.Name
+                    }
+                    else
+                    {
+                        <span class="text-danger">No Restaurant</span>
+                    }
+                </td>
              
                 <td>
                     <a asp-action="UpdateMeal" asp-controller="Admin" asp-route-id="@meal.Id"><i class="fas fa-edit" title="Edit"></i></a>

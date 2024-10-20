@@ -81,11 +81,11 @@ namespace Foodies.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (!_DBContext.Admins.Any())
-                {
-                    ModelState.AddModelError(string.Empty, "You can't register until an admin is registered");
-                    return View(customer);
-                }
+                //if (!_DBContext.Admins.Any())
+                //{
+                //    ModelState.AddModelError(string.Empty, "You can't register until an admin is registered");
+                //    return View(customer);
+                //}
 
                 var existingUser = _DBContext.Customers.FirstOrDefault(u => u.Email == customer.Email);
                 if (existingUser == null)

@@ -1,0 +1,2 @@
+# QuickServe
+Restaurant Management System

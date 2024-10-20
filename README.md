@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# Foodie
+# QuickServe
 
 ASP.NET Core MVC project facilitating restaurants management. Features include restaurant and meal reservations, alongside comprehensive CRUD operations for administrative tasks.
 
